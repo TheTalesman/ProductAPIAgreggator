@@ -2,7 +2,6 @@ package dao
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -35,7 +34,10 @@ func Connect() (ok bool) {
 	dbString.WriteString("/")
 	dbString.WriteString(dbn)
 	dbString.WriteString("?retryWrites=true&w=majority")
-	fmt.Println(dbString.String())
+
+	//TODO FIND OR DO BETTER LOGGER FOR DEBUGING.
+	// Use for debug only, security issues on production log.Println(dbString.String())
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbString.String()))
@@ -44,14 +46,58 @@ func Connect() (ok bool) {
 		log.Fatal(err)
 		ok = false
 	}
+
 	return
 }
 
-func stringBuilder() {
+//Upsert an map to db
+func Upsert(entity map[string]interface{}) (ok bool, id interface{}) {
+	ok = true
+	collection := Client.Database("linx").Collection("product")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	eBson, err := bson.Marshal(entity)
+	if err != nil {
+		log.Fatal(err)
+		ok = false
+	}
+	var rOptions options.ReplaceOptions
+	rOptions.SetUpsert(true)
+	res, err := collection.ReplaceOne(ctx, bson.M{"ID": entity["ID"]}, eBson, &rOptions)
+	if err != nil {
+		log.Fatal(err)
+		ok = false
+	}
+
+	id = res.UpsertedID
+	return
 
 }
+
+//FindByID receives id and returns a ok true if found. Product will contain data from the entity db.
+func FindByID(id string) (ok bool, entity map[string]interface{}) {
+	ok = true
+	collection := Client.Database("linx").Collection("product")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := collection.FindOne(ctx, bson.M{"ID": id}).Decode(&entity)
+	if err != nil {
+		log.Println(" Erro no Find")
+		log.Fatal(err)
+
+		ok = false
+		return
+	}
+
+	return
+
+}
+
 func getEnvVars() (u string, pass string, dbName string, dbHost string, ok bool) {
 	ok = true
+
 	err := godotenv.Load("daos/.env")
 	if err != nil {
 
@@ -64,21 +110,4 @@ func getEnvVars() (u string, pass string, dbName string, dbHost string, ok bool)
 	dbName = os.Getenv("DB_NAME")
 	dbHost = os.Getenv("DB_HOST")
 	return
-}
-
-//Upsert an map to db
-func Upsert(entity map[string]interface{}) (ok bool, id interface{}) {
-	ok = true
-	collection := Client.Database("linx").Collection("numbers")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	res, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
-	if err != nil {
-		log.Fatal(err)
-		ok = false
-	}
-
-	id = res.InsertedID
-	return
-
 }
