@@ -19,7 +19,7 @@ func main() {
 
 func Upsert(p Product) bool {
 	pMap := structs.Map(p)
-	ok := dao.Upsert(pMap)
+	ok, _ := dao.Upsert(pMap)
 	return ok
 }
 

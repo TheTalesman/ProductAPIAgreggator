@@ -2,12 +2,14 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
+	bson "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -23,6 +25,7 @@ func Connect() (ok bool) {
 	u, p, dbn, dbh, ok := getEnvVars()
 	var dbString strings.Builder
 
+	//for the sake of memory
 	dbString.WriteString("mongodb+srv://")
 	dbString.WriteString(u)
 	dbString.WriteString(":")
@@ -31,8 +34,8 @@ func Connect() (ok bool) {
 	dbString.WriteString(dbh)
 	dbString.WriteString("/")
 	dbString.WriteString(dbn)
-	dbString.WriteString("retryWrites=true&w=majority")
-
+	dbString.WriteString("?retryWrites=true&w=majority")
+	fmt.Println(dbString.String())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbString.String()))
@@ -40,7 +43,6 @@ func Connect() (ok bool) {
 	if err != nil {
 		log.Fatal(err)
 		ok = false
-
 	}
 	return
 }
@@ -52,7 +54,7 @@ func getEnvVars() (u string, pass string, dbName string, dbHost string, ok bool)
 	ok = true
 	err := godotenv.Load("daos/.env")
 	if err != nil {
-		//	log.Fatal("Error loading .env file")
+
 		log.Fatal(err)
 		ok = false
 
@@ -65,7 +67,18 @@ func getEnvVars() (u string, pass string, dbName string, dbHost string, ok bool)
 }
 
 //Upsert an map to db
-func Upsert(entity map[string]interface{}) bool {
-	return false
+func Upsert(entity map[string]interface{}) (ok bool, id interface{}) {
+	ok = true
+	collection := Client.Database("linx").Collection("numbers")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	res, err := collection.InsertOne(ctx, bson.M{"name": "pi", "value": 3.14159})
+	if err != nil {
+		log.Fatal(err)
+		ok = false
+	}
+
+	id = res.InsertedID
+	return
 
 }
