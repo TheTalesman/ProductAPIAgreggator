@@ -75,10 +75,30 @@ func Upsert(entity map[string]interface{}) (ok bool, id interface{}) {
 
 }
 
-//FindByID receives id and returns a ok true if found. Product will contain data from the entity db.
-func FindByID(id string) (ok bool, entity map[string]interface{}) {
+//FindAll gets all elements from collection
+func FindAll(col string) (ok bool, entity []map[string]interface{}) {
+	log.Println(col)
 	ok = true
-	collection := Client.Database("linx").Collection("product")
+	collection := Client.Database("linx").Collection(col)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	cur, err := collection.Find(ctx, bson.M{})
+	err = cur.All(ctx, &entity)
+
+	if err != nil {
+		log.Println(" Erro no FindAll")
+		log.Fatal(err)
+
+		ok = false
+		return
+	}
+	return
+}
+
+//FindByID receives id and returns a ok true if found. Product will contain data from the entity db.
+func FindByID(id string, col string) (ok bool, entity map[string]interface{}) {
+	ok = true
+	collection := Client.Database("linx").Collection(col)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
