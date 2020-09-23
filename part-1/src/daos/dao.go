@@ -51,9 +51,41 @@ func Connect() (ok bool) {
 }
 
 //Upsert an map to db
-func Upsert(entity map[string]interface{}) (ok bool, id interface{}) {
+func UpsertMany(entity []map[string]interface{}, col string) (ok bool, err error) {
 	ok = true
-	collection := Client.Database("linx").Collection("product")
+	collection := Client.Database("linx").Collection(col)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var operations []mongo.WriteModel
+	for _, e := range entity {
+		op := mongo.NewUpdateOneModel()
+		op.SetFilter(bson.M{"ID": e["ID"]})
+
+		op.SetUpdate(bson.M{"$set": e})
+
+		op.SetUpsert(true)
+		operations = append(operations, op)
+
+	}
+
+	bulkOption := options.BulkWriteOptions{}
+	bulkOption.SetOrdered(true)
+
+	res, err := collection.BulkWrite(ctx, operations, &bulkOption)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(res)
+	return
+
+}
+
+//Upsert an map to db
+func Upsert(entity map[string]interface{}, col string) (ok bool, id interface{}) {
+	ok = true
+	collection := Client.Database("linx").Collection(col)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

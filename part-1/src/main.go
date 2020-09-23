@@ -16,6 +16,7 @@ func main() {
 	dao.Connect()
 	r := gin.Default()
 	r.GET("/products", FindProducts)
+	r.POST("/products", UpsertProducts)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
@@ -30,11 +31,36 @@ func FindProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+//FindProducts find all products
+func UpsertProducts(c *gin.Context) {
+	// Validate input
+	var input []map[string]interface{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ok, err := UpsertMany(input)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+	log.Println(input)
+
+}
+
+//Upsert a p Product as parameter.
+//Returns OK flags success.
+func UpsertMany(ps []map[string]interface{}) (ok bool, err error) {
+	ok, err = dao.UpsertMany(ps, "product")
+	return
+}
+
 //Upsert a p Product as parameter.
 //Returns OK flags success.
 func Upsert(p Product) bool {
 	pMap := structs.Map(p)
-	ok, _ := dao.Upsert(pMap)
+	ok, _ := dao.Upsert(pMap, "product")
 	return ok
 }
 
