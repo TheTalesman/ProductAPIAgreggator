@@ -9,12 +9,13 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
-	_ "gopkg.in/mgo.v2/bson"
 )
 
 func main() {
+
 	dao.Connect()
 	r := gin.Default()
+	r.Use(Guard())
 	r.GET("/products", FindProducts)
 	r.POST("/products", UpsertProducts)
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
@@ -35,11 +36,11 @@ func FindProducts(c *gin.Context) {
 func UpsertProducts(c *gin.Context) {
 	// Validate input
 	var input []map[string]interface{}
+
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing body function/ bad formating"})
 		return
 	}
-
 	ok, err := UpsertMany(input)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})

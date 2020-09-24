@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis"
 	"github.com/joho/godotenv"
 	bson "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,11 +17,27 @@ import (
 //Client is the DB global client
 var Client *mongo.Client
 
+//RClient Redis global client
+var RClient *redis.Client
+
+func rClient() (err error) {
+	RClient = redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "Redis2019!",
+	})
+	_, err = RClient.Ping(context.Background()).Result()
+	return
+}
+
 //Connect to database
 func Connect() (ok bool) {
 	//Assert once an deny on any error.
 	ok = true
-
+	err := rClient()
+	if err != nil {
+		log.Fatal(err)
+		ok = false
+	}
 	u, p, dbn, dbh, ok := getEnvVars()
 	var dbString strings.Builder
 
