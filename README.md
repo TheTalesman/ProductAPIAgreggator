@@ -1,17 +1,17 @@
 # ProductAPIAgreggator
 
 ## REQS
-- [ ] Deve funcionar em um ambiente Linux
+- [X] Deve funcionar em um ambiente Linux
 - [ ] Deve ter testes automatizados
 - [ ] Deve ter um README explicando como instalar as dependências, executar as soluções e os testes.
 
 # TODO
 
 ## PART 1
-- [ ] PRODUCT CRUD
+- [X] PRODUCT API
 - [ ] HANDLE JSON SIZE ~5 GB
-- [ ] HANDLE REDUDANT REQUESTS BETWEEN 10 MIN WITH 403
-- [ ] STATELESS API
+- [X] HANDLE REDUDANT REQUESTS BETWEEN 10 MIN WITH 403
+- [X] STATELESS API
 
 ## PART 2
 
