@@ -41,6 +41,7 @@ func UpsertProducts(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing body function/ bad formating"})
 		return
 	}
+	log.Println("Json Binded")
 	ok, err := UpsertMany(input)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})

@@ -75,7 +75,10 @@ func UpsertMany(entity []map[string]interface{}, col string) (ok bool, err error
 	defer cancel()
 
 	var operations []mongo.WriteModel
-	for _, e := range entity {
+
+	log.Println("Initing Ops")
+
+	for k, e := range entity {
 		op := mongo.NewUpdateOneModel()
 		op.SetFilter(bson.M{"ID": e["ID"]})
 
@@ -83,6 +86,7 @@ func UpsertMany(entity []map[string]interface{}, col string) (ok bool, err error
 
 		op.SetUpsert(true)
 		operations = append(operations, op)
+		log.Println("Apended Op: ", k)
 
 	}
 
