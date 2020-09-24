@@ -1,7 +1,6 @@
 #just while dev
 #rm test.json
-cd ../../docker/ 
+
+go build -o product-api
 sudo docker-compose up -d
-cd ../part-1/src
-go build 
-./src
+
