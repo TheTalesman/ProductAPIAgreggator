@@ -38,32 +38,20 @@ func Connect() (ok bool) {
 		log.Fatal(err)
 		ok = false
 	}
-	u, p, dbn, dbh, ok := getEnvVars()
-	var dbString strings.Builder
-
-	//for the sake of memory
-	dbString.WriteString("mongodb+srv://")
-	dbString.WriteString(u)
-	dbString.WriteString(":")
-	dbString.WriteString(p)
-	dbString.WriteString("@")
-	dbString.WriteString(dbh)
-	dbString.WriteString("/")
-	dbString.WriteString(dbn)
-	dbString.WriteString("?retryWrites=true&w=majority")
+	url, ok := getEnvVars()
 
 	//TODO FIND OR DO BETTER LOGGER FOR DEBUGING.
 	// Use for debug only, security issues on production log.Println(dbString.String())
-
+	log.Println("DB STRING:", url)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbString.String()))
-	Client = client
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
+
 	if err != nil {
 		log.Fatal(err)
 		ok = false
 	}
-
+	Client = client
 	return
 }
 
@@ -168,7 +156,7 @@ func FindByID(id string, col string) (ok bool, entity map[string]interface{}) {
 
 }
 
-func getEnvVars() (u string, pass string, dbName string, dbHost string, ok bool) {
+func getEnvVars() (url string, ok bool) {
 	ok = true
 
 	err := godotenv.Load("daos/.env")
@@ -178,9 +166,21 @@ func getEnvVars() (u string, pass string, dbName string, dbHost string, ok bool)
 		ok = false
 
 	}
-	u = os.Getenv("DB_USER")
-	pass = os.Getenv("DB_PASS")
-	dbName = os.Getenv("DB_NAME")
-	dbHost = os.Getenv("DB_HOST")
+	u := os.Getenv("DB_USER")
+	p := os.Getenv("DB_PASS")
+	//dbn := os.Getenv("DB_NAME")
+	dbh := os.Getenv("DB_HOST")
+
+	var dbString strings.Builder
+
+	//for the sake of memory
+	dbString.WriteString("mongodb://")
+	dbString.WriteString(u)
+	dbString.WriteString(":")
+	dbString.WriteString(p)
+	dbString.WriteString("@")
+	dbString.WriteString(dbh)
+	dbString.WriteString("/")
+	url = dbString.String()
 	return
 }

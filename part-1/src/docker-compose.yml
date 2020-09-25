@@ -16,11 +16,17 @@ services:
     volumes:
     - ../../:/go/src/ProductAPIAgreggator:Z
     working_dir: /go/src/ProductAPIAgreggator/part-1/src
+    environment:
+      - API_DEBUGMODE=${API_GIN_DEBUG_MODE}
+      - API_MONGODBNAME=${DB_NAME}
+      - API_MONGODBURL=mongodb://${DB_USER}:${DB_PASS}@mongo/${DB_NAME}
+
     ports: 
       - "8081"
     command: ./product-api
     depends_on: 
       - redis
+      - mongo
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.product_api.rule=Host(`localhost`)"
@@ -30,7 +36,7 @@ services:
       # The official v2.0 Traefik docker image
       image: traefik:v2.0
       # Enables the web UI and tells Traefik to listen to docker
-      command: --api.insecure=true --providers.docker
+      command: --api.insecure=true --providers.docker 
       ports:
         # The HTTP port
         - "80:80"
@@ -41,4 +47,18 @@ services:
       volumes:
         # So that Traefik can listen to the Docker events
         - /var/run/docker.sock:/var/run/docker.sock:Z
-  
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+      
+    volumes:
+      - ./appdata/db:/data/db
+    ports:
+      - "27017:27017"
+    labels:
+      - "traefik.enable=false"
+      
