@@ -1,9 +1,14 @@
-FROM amazonlinux
+FROM golang:1.14.3-alpine
 
-ADD . /go/src/ProductAPIAgreggator/
+ENV SERVICE_NAME my_project
+ENV APP /src/${SERVICE_NAME}/
+ENV WORKDIR ${GOPATH}${APP}
+WORKDIR $WORKDIR
+ADD . $WORKDIR
 
 
+RUN apk update && apk upgrade && apk add --no-cache bash git openssh
+RUN apk add --no-cache \
+        libc6-compat
 
 #RUN ./product-api
-CMD tail -f /dev/null
-EXPOSE 8080

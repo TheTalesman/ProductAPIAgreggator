@@ -12,13 +12,32 @@ import (
 )
 
 func main() {
-
 	dao.Connect()
+	/* 	var portFind = ""
+	   	var port int = 8079
+
+	   	for portFind != "" {
+	   		port++
+	   		portFind, _ := dao.RClient.Get(context.Background(), strconv.Itoa(port)).Result()
+
+	   		if portFind == "" {
+	   			err := dao.RClient.Set(context.Background(), strconv.Itoa(port), "used", 0).Err()
+	   			if err != nil {
+	   				log.Println(err)
+	   				return
+	   			}
+	   			break
+	   		}
+	   	} */
+
+	//	b := ":" + strconv.Itoa(port)
 	r := gin.Default()
 	r.Use(Guard())
 	r.GET("/products", FindProducts)
 	r.POST("/products", UpsertProducts)
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	//a := rand.Intn(8099-8000) + 8000
+	//b := ":" + strconv.Itoa(a)
+	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
 //FindProducts find all products
@@ -32,7 +51,7 @@ func FindProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-//FindProducts find all products
+//UpsertProducts upserts many products
 func UpsertProducts(c *gin.Context) {
 	// Validate input
 	var input []map[string]interface{}

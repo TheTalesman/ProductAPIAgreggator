@@ -1,24 +1,24 @@
 version: '3'
 
 services:
-  
-  product-api:
+  redis:
+    image: redis
+    command: redis-server --requirepass Redis2019! --port 6379
+    ports:
+      - "6379:6379"
+    network_mode: "host"
+  product_api:
     build: .
     volumes:
     - ../../:/go/src/ProductAPIAgreggator:Z
     working_dir: /go/src/ProductAPIAgreggator/part-1/src
-
+    
     ports:
-      - "6060:8080"
+      - "8080"
     command: ./product-api
     depends_on: 
       - redis
     network_mode: "host"
 
-  redis:
-    image: redis
-    command: redis-server --requirepass Redis2019!
-    ports:
-      - "6379:6379"
-    network_mode: "host"
+  
  
