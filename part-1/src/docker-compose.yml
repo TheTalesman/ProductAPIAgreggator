@@ -1,24 +1,44 @@
-version: '3'
+version: '3.3'
 
 services:
   redis:
     image: redis
     command: redis-server --requirepass Redis2019! --port 6379
-    ports:
-      - "6379:6379"
     network_mode: "host"
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.services.redis.loadbalancer.server.port=6379"
+
   product_api:
     build: .
     volumes:
     - ../../:/go/src/ProductAPIAgreggator:Z
     working_dir: /go/src/ProductAPIAgreggator/part-1/src
-    
-    ports:
-      - "8080"
+    ports: 
+      - "8081"
     command: ./product-api
     depends_on: 
       - redis
     network_mode: "host"
-
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.product_api.rule=Host(`localhost`)"
+      - "traefik.http.services.product_api.loadbalancer.server.port=8081"
+    
+  reverse-proxy:
+      # The official v2.0 Traefik docker image
+      image: traefik:v2.0
+      # Enables the web UI and tells Traefik to listen to docker
+      command: --api.insecure=true --providers.docker
+      ports:
+        # The HTTP port
+        - "80:80"
+        # The Web UI (enabled by --api.insecure=true)
+        - "8080:8080"
+        
+     
+      volumes:
+        # So that Traefik can listen to the Docker events
+        - /var/run/docker.sock:/var/run/docker.sock:Z
   
- 

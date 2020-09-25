@@ -37,7 +37,7 @@ func main() {
 	r.POST("/products", UpsertProducts)
 	//a := rand.Intn(8099-8000) + 8000
 	//b := ":" + strconv.Itoa(a)
-	r.Run(":8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run(":8081") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
 //FindProducts find all products
