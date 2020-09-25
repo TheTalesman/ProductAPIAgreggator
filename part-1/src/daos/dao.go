@@ -22,7 +22,7 @@ var RClient *redis.Client
 
 func rClient() (err error) {
 	RClient = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     "redis:6379",
 		Password: "Redis2019!",
 	})
 	_, err = RClient.Ping(context.Background()).Result()

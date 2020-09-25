@@ -4,7 +4,8 @@ services:
   redis:
     image: redis
     command: redis-server --requirepass Redis2019! --port 6379
-    network_mode: "host"
+    ports:
+      - "6379:6379"
     labels:
       - "traefik.enable=true"
 
@@ -20,7 +21,6 @@ services:
     command: ./product-api
     depends_on: 
       - redis
-    network_mode: "host"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.product_api.rule=Host(`localhost`)"
