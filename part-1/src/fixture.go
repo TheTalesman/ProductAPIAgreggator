@@ -1,6 +1,7 @@
 package main
 
 import (
+	dao "ProductAPIAgreggator/part-1/src/daos"
 	m "ProductAPIAgreggator/part-1/src/model"
 	"encoding/json"
 	"fmt"
@@ -13,7 +14,7 @@ import (
 var PS []m.Product
 
 func worker(id int, wg *sync.WaitGroup, final bool, f *os.File) {
-	factor := 999999
+	factor := 8000
 	init := id * factor
 	for i := init; i < init+factor; i++ {
 		var p m.Product
@@ -36,7 +37,7 @@ func worker(id int, wg *sync.WaitGroup, final bool, f *os.File) {
 }
 
 func Fixture() {
-
+	dao.Connect()
 	//rbf stands for REALLY BIG FILE. Was thinking about BFF, but nevermind. Any chance you are a DOOM player?
 	f, err := os.Create("rbf.json")
 	if err != nil {

@@ -20,6 +20,17 @@
 - [ ] SANITIZE AND AGGREGATE IN IMAGES ARRAY (MAX 3) TO USE WITH API
 
 
+
+## DOCKER
+WORKS WITH COMPOSE-UP
+
+set your redhat/centos/fedora to permissive
+DISABLE SELINUX
+sudo setenforce 0
+
+
+traefik using round robin load balancing
+
 # DESCRIPTION
 ## Parte 1 - API de produtos
 

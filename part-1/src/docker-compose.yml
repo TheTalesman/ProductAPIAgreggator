@@ -23,7 +23,7 @@ services:
 
     ports: 
       - "8081"
-    command: ./product-api
+    command: ./product-api false
     depends_on: 
       - redis
       - mongo

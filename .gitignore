@@ -1,3 +1,4 @@
 .env
 external/*
 part-1/src/rbf.json
+part-1/src/appdata

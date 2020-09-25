@@ -5,6 +5,7 @@ import (
 	. "ProductAPIAgreggator/part-1/src/model"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
@@ -12,31 +13,18 @@ import (
 )
 
 func main() {
+	fixture := os.Args[1:]
+	if fixture[0] == "true" {
+		Fixture()
+		return
+	}
+
 	dao.Connect()
-	/* 	var portFind = ""
-	   	var port int = 8079
-
-	   	for portFind != "" {
-	   		port++
-	   		portFind, _ := dao.RClient.Get(context.Background(), strconv.Itoa(port)).Result()
-
-	   		if portFind == "" {
-	   			err := dao.RClient.Set(context.Background(), strconv.Itoa(port), "used", 0).Err()
-	   			if err != nil {
-	   				log.Println(err)
-	   				return
-	   			}
-	   			break
-	   		}
-	   	} */
-
-	//	b := ":" + strconv.Itoa(port)
+	dao.ConnectRedis()
 	r := gin.Default()
 	r.Use(Guard())
 	r.GET("/products", FindProducts)
 	r.POST("/products", UpsertProducts)
-	//a := rand.Intn(8099-8000) + 8000
-	//b := ":" + strconv.Itoa(a)
 	r.Run(":8081") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
 
@@ -73,7 +61,8 @@ func UpsertProducts(c *gin.Context) {
 //Upsert a p Product as parameter.
 //Returns OK flags success.
 func UpsertMany(ps []map[string]interface{}) (ok bool, err error) {
-	ok, err = dao.UpsertMany(ps, "product")
+	go dao.UpsertMany(ps, "product")
+	ok = true
 	return
 }
 

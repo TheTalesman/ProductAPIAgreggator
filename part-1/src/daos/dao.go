@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -29,15 +30,21 @@ func rClient() (err error) {
 	return
 }
 
-//Connect to database
-func Connect() (ok bool) {
-	//Assert once an deny on any error.
-	ok = true
+//ConnectRedis to Redis
+func ConnectRedis() (ok bool) {
 	err := rClient()
 	if err != nil {
 		log.Fatal(err)
 		ok = false
 	}
+	return
+}
+
+//Connect to database
+func Connect() (ok bool) {
+	//Assert once an deny on any error.
+	ok = true
+
 	url, ok := getEnvVars()
 
 	//TODO FIND OR DO BETTER LOGGER FOR DEBUGING.
@@ -59,34 +66,54 @@ func Connect() (ok bool) {
 func UpsertMany(entity []map[string]interface{}, col string) (ok bool, err error) {
 	ok = true
 	collection := Client.Database("linx").Collection(col)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
 	defer cancel()
 
 	var operations []mongo.WriteModel
 
 	log.Println("Initing Ops")
+	Total := len(entity)
+	i := 0
+	factor := Total / 10
+	h := factor
+	var wg sync.WaitGroup
+	for i < Total {
 
-	for k, e := range entity {
-		op := mongo.NewUpdateOneModel()
-		op.SetFilter(bson.M{"ID": e["ID"]})
+		wg.Add(1)
 
-		op.SetUpdate(bson.M{"$set": e})
+		go func(i int, h int, wg *sync.WaitGroup) {
+			for i < h {
+				nEntity := entity[i]
+				op := mongo.NewUpdateOneModel()
+				op.SetFilter(bson.M{"ID": nEntity["ID"]})
 
-		op.SetUpsert(true)
-		operations = append(operations, op)
-		log.Println("Apended Op: ", k)
+				op.SetUpdate(bson.M{"$set": nEntity})
 
+				op.SetUpsert(true)
+				operations = append(operations, op)
+
+				i++
+
+			}
+			log.Println("Finished appending Ops:", i)
+			log.Println("of a Total: ", Total)
+			bulkOption := options.BulkWriteOptions{}
+			bulkOption.SetOrdered(true)
+
+			_, err := collection.BulkWrite(ctx, operations, &bulkOption)
+			if err != nil {
+				log.Fatal(err)
+			}
+			wg.Done()
+		}(i, h, &wg)
+		wg.Wait()
+		h += factor
+		i += factor
+		if h > Total {
+			h = Total
+		}
 	}
 
-	bulkOption := options.BulkWriteOptions{}
-	bulkOption.SetOrdered(true)
-
-	res, err := collection.BulkWrite(ctx, operations, &bulkOption)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(res)
 	return
 
 }
