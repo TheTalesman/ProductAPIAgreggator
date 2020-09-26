@@ -26,6 +26,8 @@ WORKS WITH COMPOSE-UP
 
 set your redhat/centos/fedora to permissive
 DISABLE SELINUX
+
+
 sudo setenforce 0
 
 
