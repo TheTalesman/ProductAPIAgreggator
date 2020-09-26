@@ -22,6 +22,8 @@ var Client *mongo.Client
 var RClient *redis.Client
 
 func rClient() (err error) {
+
+	//TODO put in .env
 	RClient = redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: "Redis2019!",
@@ -63,9 +65,9 @@ func Connect() (ok bool) {
 }
 
 //Upsert an map to db
-func UpsertMany(entity []map[string]interface{}, col string) (ok bool, err error) {
+func UpsertMany(entity []map[string]interface{}, col string, dbName string) (ok bool, err error) {
 	ok = true
-	collection := Client.Database("linx").Collection(col)
+	collection := Client.Database(dbName).Collection(col)
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
 	defer cancel()
 

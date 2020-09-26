@@ -6,7 +6,10 @@
 - [ ] Deve ter um README explicando como instalar as dependências, executar as soluções e os testes.
 
 # TODO
-
+- [ ] Check async  part-1
+- [ ] TRANSLATE ALL COMMENTS
+- [ ] ORGANIZE PROJECT
+ 
 ## PART 1
 - [X] PRODUCT API
 - [ ] HANDLE JSON SIZE ~5 GB
@@ -16,8 +19,8 @@
 ## PART 2
 
 - [ ] ENDPOINT FOR IMAGES DUMP
-- [ ] FILTER IMAGES FOR CODE 200
-- [ ] SANITIZE AND AGGREGATE IN IMAGES ARRAY (MAX 3) TO USE WITH API
+- [x] FILTER IMAGES FOR CODE 200
+- [x] SANITIZE AND AGGREGATE IN IMAGES ARRAY (MAX 3) TO USE WITH API
 
 
 
