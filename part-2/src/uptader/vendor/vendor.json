@@ -1,0 +1,11 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"path": "daos",
+			"revision": ""
+		}
+	],
+	"rootPath": "ProductAPIAgreggator/part-2/src/uptader"
+}

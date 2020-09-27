@@ -3,13 +3,13 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var ch chan ChannelObject
@@ -54,39 +54,45 @@ func main() {
 	var workerBatch []Product
 	ch = make(chan ChannelObject)
 	maxWorkers := 400
-	generateWorkers(maxWorkers)
+	generateWorkersAggregate(maxWorkers)
+
 	req = 0
-
 	//passar pids com suas linhas para canais
-	for i < len(products)-1 {
+	go func() {
+		for i < len(products)-1 {
 
-		currentPid := products[i].ProductID
-		nextPid := products[i+1].ProductID
-		workerBatch = append(workerBatch, products[i])
-		if currentPid != nextPid {
-			wg.Add(1)
+			currentPid := products[i].ProductID
+			nextPid := products[i+1].ProductID
+			workerBatch = append(workerBatch, products[i])
+			if currentPid != nextPid {
+				wg.Add(1)
 
-			log.Println("sent to batch: ", currentPid)
-			co := ChannelObject{
-				currentPid,
-				workerBatch, &wg,
+				log.Println("sent to batch: ", currentPid)
+				co := ChannelObject{
+					currentPid,
+					workerBatch, &wg,
+				}
+				//workers fazem requests e compilam ate 3 imagens por produto (descartando requests acima da 3 OK)
+				ch <- co
+
+				workerBatch = nil
+				//	time.Sleep(200 * time.Millisecond)
 			}
-			//workers fazem requests e compilam ate 3 imagens por produto (descartando requests acima da 3 OK)
-			ch <- co
+			i++
 
-			workerBatch = nil
-			//	time.Sleep(200 * time.Millisecond)
 		}
-		i++
+	}()
+	log.Println("aqui")
+	time.Sleep(2 * time.Second)
 
+	for i := 0; i < 3; i++ {
+		go workerReq(chr)
 	}
+	time.Sleep(2 * time.Second)
 	wg.Wait()
 	log.Println("Aggregation Done!")
+	log.Println("Posting done!")
 
-	//monta request para o atualizador
-	for i := range chr {
-		fmt.Println(i)
-	}
 	/*
 		log.Println(f)
 		data := ProductNodes{}

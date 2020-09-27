@@ -2,25 +2,30 @@ package main
 
 import (
 	"ProductAPIAgreggator/part-2/src/utils"
+	"bytes"
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 )
 
-func generateWorkers(len int) {
+func generateWorkersAggregate(len int) {
 	for i := 0; i < len; i++ {
-		go worker(ch)
+		go workerAggregate(ch)
 	}
 }
 
 func setTransport() {
 	http.DefaultTransport.(*http.Transport).MaxIdleConns = 400
 	http.DefaultTransport.(*http.Transport).MaxConnsPerHost = 400
-	myClient = &http.Client{Timeout: time.Second * 2}
+	myClient = &http.Client{Timeout: time.Second * 5}
 }
 
 //Recebe todas as linhas do mesmo pid, faz ate 3 requests ok e responde para o canal com linha agregada.
-func worker(co <-chan ChannelObject) {
+func workerAggregate(co <-chan ChannelObject) {
+
 	for o := range co {
 
 		var po ProductOutput
@@ -28,18 +33,16 @@ func worker(co <-chan ChannelObject) {
 
 		for _, p := range o.ps {
 			url := p.Image
-			//url = "http://localhost:8081"
-
 			resp, err := myClient.Get(url)
-
 			req++
-
 			err = utils.Check(err, 0)
 			if err == nil {
-
 				if resp.StatusCode == 200 {
 					po.Images = append(po.Images, p.Image)
 					if len(po.Images) == 3 {
+
+						go sendRequest(po)
+
 						break
 
 					}
@@ -50,17 +53,50 @@ func worker(co <-chan ChannelObject) {
 				log.Println("Caso ocorra erro de timeout ampliar tempo no metodo setTransport acima.")
 
 			}
-			//Throw the body away  to deal with TIME_WAIT
-			//io.Copy(ioutil.Discard, resp.Body)
 			resp.Body.Close()
+
+			//Throw the body away  to deal with TIME_WAIT
+			io.Copy(ioutil.Discard, resp.Body)
 
 		}
 
-		log.Println("Req Count: ", req)
-		log.Println("Aggregate object: ", po)
-		/* cor := ChannelObjectResponse{po}
-		chr <- cor */
-
 		o.wg.Done()
+
 	}
+
+}
+
+func sendRequest(po ProductOutput) {
+	cor := ChannelObjectResponse{po}
+	chr <- cor
+
+}
+
+func workerReq(chr <-chan ChannelObjectResponse) {
+	for range chr {
+
+		log.Println(len(chr))
+	}
+	if len(chr) >= 100 {
+
+		var pos []ProductOutput
+		for cor := range chr {
+			pos = append(pos, cor.po)
+		}
+		workerRequester(pos)
+
+	}
+}
+func workerRequester(pos []ProductOutput) {
+
+	response, err := json.Marshal(pos)
+	resp, err := myClient.Post("http://localhost:8082/products", "application/json", bytes.NewBuffer(response))
+	utils.Check(err, 0)
+	log.Println(resp)
+
+	/*
+		DEBUG
+		var bd interface{}
+		json.NewDecoder(resp.Body).Decode(&bd)
+		log.Println("response Body:", bd) */
 }
