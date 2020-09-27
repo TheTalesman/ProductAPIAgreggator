@@ -28,7 +28,7 @@ func rClient() (err error) {
 		Addr:     "redis:6379",
 		Password: "Redis2019!",
 	})
-	_, err = RClient.Ping(context.Background()).Result()
+	_, err = RClient.Ping().Result()
 	return
 }
 
@@ -57,15 +57,20 @@ func Connect() (ok bool) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 
 	if err != nil {
-		log.Fatal(err)
 		ok = false
+		log.Fatal(err)
+	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		ok = false
+		log.Fatal(err)
 	}
 	Client = client
 	return
 }
 
 //Upsert an map to db
-func UpsertMany(entity []map[string]interface{}, col string, dbName string) (ok bool, err error) {
+func UpsertMany(entity []map[string]interface{}, col string, idField string, dbName string) (ok bool, err error) {
 	ok = true
 	collection := Client.Database(dbName).Collection(col)
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
@@ -87,23 +92,24 @@ func UpsertMany(entity []map[string]interface{}, col string, dbName string) (ok 
 			for i < h {
 				nEntity := entity[i]
 				op := mongo.NewUpdateOneModel()
-				op.SetFilter(bson.M{"ID": nEntity["ID"]})
+				op.SetFilter(bson.M{idField: nEntity[idField]})
 
 				op.SetUpdate(bson.M{"$set": nEntity})
 
 				op.SetUpsert(true)
 				operations = append(operations, op)
-
+				log.Println(nEntity)
 				i++
 
+				log.Println("Finished appending Ops:", i)
 			}
-			log.Println("Finished appending Ops:", i)
 			log.Println("of a Total: ", Total)
 			bulkOption := options.BulkWriteOptions{}
 			bulkOption.SetOrdered(true)
 
 			_, err := collection.BulkWrite(ctx, operations, &bulkOption)
 			if err != nil {
+				log.Println("AQUI1")
 				log.Fatal(err)
 			}
 			wg.Done()
@@ -121,7 +127,7 @@ func UpsertMany(entity []map[string]interface{}, col string, dbName string) (ok 
 }
 
 //Upsert an map to db
-func Upsert(entity map[string]interface{}, col string) (ok bool, id interface{}) {
+func Upsert(entity map[string]interface{}, col string, idField string) (ok bool, id interface{}) {
 	ok = true
 	collection := Client.Database("linx").Collection(col)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -134,7 +140,7 @@ func Upsert(entity map[string]interface{}, col string) (ok bool, id interface{})
 	}
 	var rOptions options.ReplaceOptions
 	rOptions.SetUpsert(true)
-	res, err := collection.ReplaceOne(ctx, bson.M{"ID": entity["ID"]}, eBson, &rOptions)
+	res, err := collection.ReplaceOne(ctx, bson.M{idField: entity[idField]}, eBson, &rOptions)
 	if err != nil {
 		log.Fatal(err)
 		ok = false
@@ -146,10 +152,10 @@ func Upsert(entity map[string]interface{}, col string) (ok bool, id interface{})
 }
 
 //FindAll gets all elements from collection
-func FindAll(col string) (ok bool, entity []map[string]interface{}) {
+func FindAll(col string, dbName string) (ok bool, entity []map[string]interface{}) {
 	log.Println(col)
 	ok = true
-	collection := Client.Database("linx").Collection(col)
+	collection := Client.Database(dbName).Collection(col)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	cur, err := collection.Find(ctx, bson.M{})
@@ -188,7 +194,7 @@ func FindByID(id string, col string) (ok bool, entity map[string]interface{}) {
 func getEnvVars() (url string, ok bool) {
 	ok = true
 
-	err := godotenv.Load("daos/.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 
 		log.Fatal(err)

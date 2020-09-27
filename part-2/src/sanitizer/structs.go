@@ -7,14 +7,19 @@ import (
 
 //ChannelObject is sent from sanitizer to worker with data to test and aggregate
 type ChannelObject struct {
+	pl []ProductLine
+	wg *sync.WaitGroup
+}
+
+//ProductLine represents a line from dump file
+type ProductLine struct {
 	pid string
 	ps  []Product
-	wg  *sync.WaitGroup
 }
 
 //ChannelObjectResponse goes from worker to sanitizer to be sent to updater
 type ChannelObjectResponse struct {
-	po ProductOutput
+	po []ProductOutput
 }
 
 //ProductOutput objeto transformados para ser enviado ao updater

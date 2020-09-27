@@ -1,0 +1,60 @@
+version: '3.3'
+
+services:
+  
+  updater:
+    build: .
+    
+    volumes:
+    - ../../:/go/src/ProductAPIAgreggator:Z
+    working_dir: /go/src/ProductAPIAgreggator/part-2/src/updater
+    environment:
+      - API_DEBUGMODE=${API_GIN_DEBUG_MODE}
+   
+    ports: 
+      - "8082"
+    command: ./updater
+    depends_on: 
+      - mongo
+      
+
+    restart: on-failure
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.updater.rule=Host(`localhost`)"
+      - "traefik.http.services.updater.loadbalancer.server.port=8082"
+    
+  reverse-proxy:
+      # The official v2.0 Traefik docker image
+      image: traefik:v2.0
+      # Enables the web UI and tells Traefik to listen to docker
+      command: --api.insecure=true --providers.docker 
+      ports:
+        # The HTTP port
+        - "80:80"
+        # The Web UI (enabled by --api.insecure=true)
+        - "8080:8080"
+        
+     
+      volumes:
+        # So that Traefik can listen to the Docker events
+        - /var/run/docker.sock:/var/run/docker.sock:Z
+  mongo:
+    image: mongo
+    restart: on-failure
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+      
+    volumes:
+      - ./appdata/db:/data/db
+    ports:
+      - "27017:27017"
+    labels:
+      - "traefik.enable=false"
+      - "traefik.http.routers.mongo.rule=Host(`localhost`)"
+
+      - "traefik.http.services.mongo.loadbalancer.server.port=27017"
+
+      

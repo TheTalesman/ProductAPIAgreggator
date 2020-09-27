@@ -17,6 +17,7 @@ var myClient *http.Client
 var chr chan ChannelObjectResponse
 
 func main() {
+
 	setTransport()
 	f, err := os.Open("../dump/input-dump")
 	defer f.Close()
@@ -51,44 +52,72 @@ func main() {
 
 	var wg sync.WaitGroup
 	i := 0
-	var workerBatch []Product
-	ch = make(chan ChannelObject)
-	maxWorkers := 400
-	generateWorkersAggregate(maxWorkers)
+	var productBatch []Product
+	var workerBatch ChannelObject
+
+	//FINE TUNE SANITIZER
+
+	nWorkers := 5
+	channelBuffer := 100
+	batchSize := 10
+	sleepTime := 200 * time.Millisecond
+
+	ch = make(chan ChannelObject, channelBuffer)
+	generateWorkersAggregate(nWorkers)
 
 	req = 0
 	//passar pids com suas linhas para canais
-	go func() {
-		for i < len(products)-1 {
+	//go func() {
+	for i < len(products) {
 
-			currentPid := products[i].ProductID
-			nextPid := products[i+1].ProductID
-			workerBatch = append(workerBatch, products[i])
-			if currentPid != nextPid {
-				wg.Add(1)
+		currentPid := products[i].ProductID
 
-				log.Println("sent to batch: ", currentPid)
-				co := ChannelObject{
-					currentPid,
-					workerBatch, &wg,
-				}
-				//workers fazem requests e compilam ate 3 imagens por produto (descartando requests acima da 3 OK)
-				ch <- co
+		productBatch = append(productBatch, products[i])
 
-				workerBatch = nil
-				//	time.Sleep(200 * time.Millisecond)
-			}
-			i++
-
+		nextPid := ""
+		if i < len(products)-1 {
+			nextPid = products[i+1].ProductID
 		}
-	}()
-	log.Println("aqui")
-	time.Sleep(2 * time.Second)
 
-	for i := 0; i < 3; i++ {
-		go workerReq(chr)
+		if nextPid != currentPid {
+			//finish one product batch
+			co := ProductLine{
+				currentPid,
+				productBatch,
+			}
+
+			workerBatch.pl = append(workerBatch.pl, co)
+			productBatch = nil
+		}
+
+		//Batches de x produtos enviados para agregar
+		//workers farão requests e compilam ate 3 imagens por produto (descartando requests acima da 3 OK)
+		if len(workerBatch.pl) >= batchSize {
+			wg.Add(1)
+			workerBatch.wg = &wg
+
+			ch <- workerBatch
+			for _, pl := range workerBatch.pl {
+				log.Println("sent to batch: ", pl.pid)
+			}
+			time.Sleep(sleepTime)
+			workerBatch.pl = nil
+		} else {
+			i++
+		}
 	}
-	time.Sleep(2 * time.Second)
+
+	//Não perder possíveis que não entraram em um batch full
+	wg.Add(1)
+	workerBatch.wg = &wg
+
+	ch <- workerBatch
+	for _, pl := range workerBatch.pl {
+		log.Println("sent to batch: ", pl.pid)
+	}
+	//}()
+	close(ch)
+
 	wg.Wait()
 	log.Println("Aggregation Done!")
 	log.Println("Posting done!")

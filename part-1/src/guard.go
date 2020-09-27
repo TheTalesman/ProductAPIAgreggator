@@ -3,7 +3,6 @@ package main
 import (
 	dao "ProductAPIAgreggator/part-1/src/daos"
 	"bytes"
-	"context"
 	"crypto/sha1"
 	"encoding/hex"
 	"io/ioutil"
@@ -29,7 +28,7 @@ func Guard() gin.HandlerFunc {
 			hash := hex.EncodeToString(h.Sum(nil))
 			log.Println("hash: ", hash)
 
-			tt, err := dao.RClient.Get(context.Background(), hash).Result()
+			tt, err := dao.RClient.Get(hash).Result()
 			if err != nil {
 				log.Println("Falha no GET REDIS")
 				setExpire(hash)
@@ -63,7 +62,7 @@ func Guard() gin.HandlerFunc {
 
 func setExpire(hash string) {
 	//600 = 10 min in unix
-	err := dao.RClient.Set(context.Background(), hash, time.Now().Unix()+600, 0).Err()
+	err := dao.RClient.Set(hash, time.Now().Unix()+600, 0).Err()
 	if err != nil {
 		log.Fatal("Falha no SET REDIS")
 		log.Fatal(err)

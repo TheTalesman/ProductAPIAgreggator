@@ -14,7 +14,7 @@ import (
 //FindProducts find all products
 func FindProducts(c *gin.Context) {
 
-	ok, res := dao.FindAll("product")
+	ok, res := dao.FindAll("product", "linx")
 	if !ok {
 		c.JSON(http.StatusNotFound, res)
 
@@ -45,7 +45,9 @@ func UpsertProducts(c *gin.Context) {
 //Returns OK flags success.
 func UpsertMany(ps []map[string]interface{}) (ok bool, err error) {
 	//TODO put dbname in env vars
-	go dao.UpsertMany(ps, "product", "linx")
+	idField := (&Product{}).StructIdField()
+
+	go dao.UpsertMany(ps, "product", idField, "linx")
 	ok = true
 	return
 }
@@ -54,7 +56,7 @@ func UpsertMany(ps []map[string]interface{}) (ok bool, err error) {
 //Returns OK flags success.
 func Upsert(p Product) bool {
 	pMap := structs.Map(p)
-	ok, _ := dao.Upsert(pMap, "product")
+	ok, _ := dao.Upsert(pMap, "product", "linx")
 	return ok
 }
 
