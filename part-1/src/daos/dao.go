@@ -79,9 +79,14 @@ func UpsertMany(entity []map[string]interface{}, col string, idField string, dbN
 	var operations []mongo.WriteModel
 
 	log.Println("Initing Ops")
+	//Pagination with maxFactor as batch limiter
 	Total := len(entity)
 	i := 0
 	factor := Total / 10
+	maxFactor := 100
+	if factor > maxFactor {
+		factor = maxFactor
+	}
 	h := factor
 	var wg sync.WaitGroup
 	for i < Total {
@@ -92,13 +97,13 @@ func UpsertMany(entity []map[string]interface{}, col string, idField string, dbN
 			for i < h {
 				nEntity := entity[i]
 				op := mongo.NewUpdateOneModel()
-				op.SetFilter(bson.M{idField: nEntity[idField]})
+				op.SetFilter(bson.M{"ID": nEntity["ID"]})
 
 				op.SetUpdate(bson.M{"$set": nEntity})
 
 				op.SetUpsert(true)
 				operations = append(operations, op)
-				log.Println(nEntity)
+				//log.Println(nEntity)
 				i++
 
 				log.Println("Finished appending Ops:", i)
@@ -106,10 +111,10 @@ func UpsertMany(entity []map[string]interface{}, col string, idField string, dbN
 			log.Println("of a Total: ", Total)
 			bulkOption := options.BulkWriteOptions{}
 			bulkOption.SetOrdered(true)
-
+			//log.Println(operations)
 			_, err := collection.BulkWrite(ctx, operations, &bulkOption)
 			if err != nil {
-				log.Println("AQUI1")
+				log.Println("ERRO BULK WRITE")
 				log.Fatal(err)
 			}
 			wg.Done()

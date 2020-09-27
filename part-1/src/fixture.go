@@ -14,7 +14,7 @@ import (
 var PS []m.Product
 
 func worker(id int, wg *sync.WaitGroup, final bool, f *os.File) {
-	factor := 8000
+	factor := 800
 	init := id * factor
 	for i := init; i < init+factor; i++ {
 		var p m.Product
