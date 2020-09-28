@@ -97,7 +97,7 @@ func UpsertMany(entity []map[string]interface{}, col string, idField string, dbN
 			for i < h {
 				nEntity := entity[i]
 				op := mongo.NewUpdateOneModel()
-				op.SetFilter(bson.M{"ID": nEntity["ID"]})
+				op.SetFilter(bson.M{idField: nEntity[idField]})
 
 				op.SetUpdate(bson.M{"$set": nEntity})
 
