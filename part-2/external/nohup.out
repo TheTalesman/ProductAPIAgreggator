@@ -1,0 +1,18 @@
+[2020-09-27 21:24:31] INFO  WEBrick 1.6.0
+[2020-09-27 21:24:31] INFO  ruby 2.7.1 (2020-03-31) [x86_64-linux]
+== Someone is already performing on port 4567!
+/usr/share/ruby/socket.rb:201:in `bind': Address already in use - bind(2) for 127.0.0.1:4567 (Errno::EADDRINUSE)
+	from /usr/share/ruby/socket.rb:201:in `listen'
+	from /usr/share/ruby/socket.rb:765:in `block in tcp_server_sockets'
+	from /usr/share/ruby/socket.rb:227:in `each'
+	from /usr/share/ruby/socket.rb:227:in `foreach'
+	from /usr/share/ruby/socket.rb:763:in `tcp_server_sockets'
+	from /usr/share/ruby/webrick/utils.rb:65:in `create_listeners'
+	from /usr/share/ruby/webrick/server.rb:127:in `listen'
+	from /usr/share/ruby/webrick/server.rb:108:in `initialize'
+	from /usr/share/ruby/webrick/httpserver.rb:47:in `initialize'
+	from /home/thetalesman/.gem/ruby/gems/rack-2.2.3/lib/rack/handler/webrick.rb:38:in `new'
+	from /home/thetalesman/.gem/ruby/gems/rack-2.2.3/lib/rack/handler/webrick.rb:38:in `run'
+	from /home/thetalesman/.gem/ruby/gems/sinatra-2.1.0/lib/sinatra/base.rb:1565:in `start_server'
+	from /home/thetalesman/.gem/ruby/gems/sinatra-2.1.0/lib/sinatra/base.rb:1499:in `run!'
+	from /home/thetalesman/.gem/ruby/gems/sinatra-2.1.0/lib/sinatra/main.rb:45:in `block in <module:Sinatra>'

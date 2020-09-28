@@ -1,4 +1,4 @@
-FROM golang:1.14.3-alpine as customgo
+FROM golang:1.14.3 as customgo
 
 ENV SERVICE_NAME my_project
 ENV APP /src/${SERVICE_NAME}/

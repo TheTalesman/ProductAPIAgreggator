@@ -48,7 +48,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
       
     volumes:
-      - ./appdata/db:/data/db
+      - ./../../shared/appdata:/data/db
     ports:
       - "27017:27017"
     labels:

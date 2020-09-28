@@ -1,6 +1,5 @@
 
 docker-compose down
-sudo rm -rf appdata/
 cd updater/
 go build -o updater
 cd ../sanitizer/
