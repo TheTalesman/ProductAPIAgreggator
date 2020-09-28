@@ -1,8 +1,8 @@
 .env
 external/*
 part-1/src/rbf.json
-part-1/src/appdata
-part-2/src/appdata
+shared
 part-2/src/dump
 part-2/external/input-dump
 vendor
+part-2/src/updater/nohup.out

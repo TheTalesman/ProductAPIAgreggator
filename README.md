@@ -28,7 +28,19 @@ go mod init
 go mod vendor
 ```
 
-3 - .env file
+This project includes dockerfiles and deploy.sh scripts, some scripts may ask for sudo permissions, you can rest assured that there's no catchup on the scripts, it just may be necessary.
+
+This project should run in any linux machine, but if you intend to run it on a RHEL family OS (Fedora, CentOS, RedHat...) you should set SELinux to permissive because of permission problems with docker.
+```
+### IF RHEL OS ONLY ###
+sudo setenforce 0
+```
+
+
+## Part 1
+
+
+1 - .env file
 ```
 cd part-1/src/
 touch .env
@@ -43,26 +55,45 @@ DB_HOST=mongo
 DB_NAME=linx
 ```
 
-This project includes dockerfiles and deploy.sh scripts, some scripts may ask for sudo permissions, you can rest assured that there's no catchup on the scripts, it just may be necessary.
 
-This project should run in any linux machine, but if you intend to run it on a RHEL family OS (Fedora, CentOS, RedHat...) you should set SELinux to permissive because of permission problems with docker.
-```
-### IF RHEL OS ONLY ###
-sudo setenforce 0
-```
-
+2 - deploy with sudo (if you have docker installed for user with permissions setup correctly you can just ./deploy)
 ```
 cd part-1/src/
 sudo ./deploy.sh
 ```
 
+3- Fixture File for Part-1
+If you need a file to post in the api, you can fixture one. Go to docker-compose.yaml and change the line 26
+`command: ./product-api false`
+to 
+`command: ./product-api true`
+do a ./deploy.sh and it will fixture a rbf.json you can use as request body
+change it back again to false to run the api. (parameter true will only fixture)
 
+4- Post src/rbf.json as body request to localhost/products, the application will persist
 
-
-## Part 1
+5- GET localhost/products will return persisted objects. As this is a async operation, the response will return 200 ok but the objects will still be in processing, so you should look in the logs to the end of processing before request this GET.
 
 
 ## Part 2
+
+1 - .env file
+From the root folder:
+```
+cd part-2/src/
+touch .env
+```
+
+edit .env file and insert the environment variables:
+```
+API_GIN_DEBUG_MODE=true
+DB_USER={dbuser}
+DB_PASS={password}
+DB_HOST=mongo
+DB_NAME=linx
+```
+
+
 ### SANITIZER 
 #### Description
 Sanitizer reads a dump file (/part-2/external/input-dump) parses each line into a request in the external images api (/part-2/external/url-aggregator-api.rb).
