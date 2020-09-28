@@ -166,3 +166,15 @@ Updater use the daos of part-1 for code reuse.
 - [X] Deve funcionar em um ambiente Linux
 - [ ] Deve ter testes automatizados
 - [x] Deve ter um README explicando como instalar as dependências, executar as soluções e os testes.
+
+
+# A Word about tests
+Started the project trying with TDD, but I really noticed that if I was going to test everything the right way it would take long enough to lose the project deadline. So I opted leaving the tests behind to workup as next steps. 
+To make tests work part-1/src:$ go test ./...
+It will not find .env file because go needs a fix in local imports. Theres only a small number of tests in part-1 that hasn`t been used and probably are not useful enough for now. 
+
+Besides that, it has been a wonderful project and lesson. This application relies heavily on logging, as a antifragile way to react fast. With a better logging tool/exposing logging files it can get more robust and even anti fragile with some kind of setup via SNS and Cloudwath, for example.
+Traefik is a good option too, but it needs some more setup to enable tracing, metris and access log.
+
+# Final Words
+If you need any assistance feel free to reach me at alisonsvargas@gmail.com
