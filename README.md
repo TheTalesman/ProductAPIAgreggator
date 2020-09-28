@@ -38,7 +38,7 @@ sudo setenforce 0
 
 
 ## Part 1
-
+Please free up ports 80, 8080, 8081, 8082, 4567, 27017. 
 
 1 - .env file
 ```
@@ -93,6 +93,22 @@ DB_HOST=mongo
 DB_NAME=linx
 ```
 
+Start the updater, mongo and traefik lb
+`sudo /deploy.sh`
+
+
+Drop a file named input-dump in ProductApiAggregator/part-2/src/dump some json like:
+```
+{"productId":"pid482","image":"http://localhost:4567/images/167410.png"}
+{"productId":"pid1613","image":"http://localhost:4567/images/122577.png"}
+{"productId":"pid7471","image":"http://localhost:4567/images/177204.png"}
+
+```
+
+Start the sanitizer
+`sanitizer/san`
+
+Watch the logs!
 
 ### SANITIZER 
 #### Description
@@ -126,15 +142,15 @@ Updater use the daos of part-1 for code reuse.
 
 - [ ] Dockerize url-aggregator-api.rb
 - [ ] Implement Logger with debug level
-- [ ] Check async  part-1
+- [x] Check async  part-1
 - [ ] TRANSLATE ALL COMMENTS
-- [ ] ORGANIZE PROJECT
+- [x] ORGANIZE PROJECT
 
 ## PART 1
 
 
 - [X] PRODUCT API
-- [ ] HANDLE JSON SIZE ~5 GB
+- [ ] HANDLE JSON SIZE ~5 GB (TO BE TESTED)
 - [X] HANDLE REDUDANT REQUESTS BETWEEN 10 MIN WITH 403
 - [X] STATELESS API
 
@@ -149,4 +165,4 @@ Updater use the daos of part-1 for code reuse.
 ## REQS
 - [X] Deve funcionar em um ambiente Linux
 - [ ] Deve ter testes automatizados
-- [ ] Deve ter um README explicando como instalar as dependências, executar as soluções e os testes.
+- [x] Deve ter um README explicando como instalar as dependências, executar as soluções e os testes.
